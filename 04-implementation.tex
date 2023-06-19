@@ -1,0 +1,36 @@
+We start by describing the software implementation of \monolithicPR{} and \levelwisePR{} on the CPU and the GPU. Both algorithms accept the previous and current snapshot of a graph as input, along with the initial ranks of the vertices. SCCs of both graph snapshots are obtained using Kosaraju's algorithm \cite{scc-sharir81} and compared, in order to obtain a list of changed SCCs. From each SCC, depth-first search (DFS) is performed in order to obtain a list of affected SCCs. We use the CSR representation of graphs for PageRank computation in order to have good memory locality. Vertices are reordered as part of preprocessing step, and computed ranks are un-reordered as part of post-processing step.
+
+
+
+
+\subsection{CPU implementation with OpenMP}
+
+With \monolithicPR{}, vertices of affected SCCs are grouped together (as it has been observed to improve performance \cite{gh-levl21}), and selected for PageRank computation, while the remaining vertices are skipped. This is done by arranging the affected vertices (grouped by SCC) at the top of the CSR representation of the graph. The calculation of ranks of affected vertices in each iteration is done is parallel with OpenMP using 32 auto-scheduled threads, such that calculation of ranks of one or more vertices is assigned to each thread.
+
+With \levelwisePR{}, affected SCCs are arranged in a topological order of their appearance in the block-graph. Each SCC in the block-graph is represented by a vertex, and each cross-edge between two SCCs represents an edge (multiple cross-edges between SCCs are represented by a single edge). A simple example of this process is shown in Figure \ref{fig:levelwise}. SCCs in the same level in the block-graph are combined, and each level is processed in sequential order. This is done by performing the entire PageRank computation loop (i.e., multiple iterations) per level until its convergence.
+
+
+
+
+\subsection{GPU implementation}
+
+We discuss the details of how we achieve good device utilization and load balance across threads in our GPU implementation. We first describe the implementation of \monolithicPR{}. As the degree of vertices may be varying widely, we follow the general practice of choosing a thread or block of threads per vertex for calculating ranks. In order to achieve this, vertices in each SCC with an in-degree of $64$ ($SWITCH\_DEG$) or below are considered to be the thread-per-vertex partition where a CUDA kernel assigns the work of calculating the rank for each vertex to a single thread (belonging to a block of $512$ threads). For vertices with in-degree greater than $64$, the CUDA kernel assigns the work of calculating the ranks of each such vertex to a block of threads (consisting of $256$ threads). We observe that grouping vertices by SCCs, and processing each SCC with a thread-per-vertex and a block-per-vertex CUDA kernel after partitioning yields better performance \cite{gh-levl21}. Hence, this is the approach taken here. However as mentioned in \cite{gh-levl21}, small affected SCCs are combined together until they satisfy a minimum work requirement of 10 million vertices ($MIN\_WORK$). We do this in order to reduce the number of kernel calls. Further details of the implementation is given in \cite{gh-levl21}.
+
+The GPU implementation of \levelwisePR{} builds upon the implementation of \monolithicPR{}  in a manner similar to that described in the previous section. 
+
+
+
+
+% Monolithic PageRank (CPU)
+% Once calculation of ranks is complete, the error between the ranks of affected vertices in the previous and the current iteration is obtained by computing $L\infty{}-norm$ between the two rank vectors (once again in parallel using 32 auto-scheduled threads, such that the calculation of error of one or more vertices is assigned to each thread with threads cooperating to obtain the final error value). If this error lies below the desired tolerance (usually $10^{-6}$), the main loop terminates. Note that the main loop itself is executed sequentially.
+
+% Levelwise PageRank (GPU)
+% Each level thus consists of a number of affected vertices which are processed in parallel with OpenMP using 32 auto-scheduled threads, as mentioned above. Note that the unaffected SCCs of (of any level) are placed at the end of the CSR representation (upon which computation is performed), similar to that of Monolithic PageRank. The main loop completes when each of the levels have sequentially converged.
+
+% Monolithic PageRank (CPU)
+% This partitioning of vertices is done by in-degree in order to assist in even work load across blocks of threads in a grid, through the assignment of a thread per vertex to easily process-able vertices with low in-degree, and the assignment of a block per vertex to difficult to process vertices with high in-degree. Note that assigning multiple blocks to a single vertex would require cross-block communication, and thus prove to be counterproductive. It has been observed in \cite{pr-algo21} that grouping vertices by SCCs, and processing each SCC with a thread-per-vertex and a block-per-vertex CUDA kernel after partitioning yields better performance. Hence, this is the approach taken here. However, as mentioned in \cite{pr-algo21}, small affected SCCs are combined together until they satisfy a minimum work requirement of $10 million$ vertices. This is done in order to reduce the number of kernel calls, which can have significant overhead. Further details of the implementation is given in \cite{pr-volta21}.
+
+% Note that the CSR of the vertices are arranged in the order as mentioned above, with the affected SCCs (vertices) being placed at the top of the CSR, and the unaffected vertices being placed at the bottom of the CSR. This again is part of the preprocessing step and is performed on the CPU, where the CSR is generated. This is then copied over to the GPU where the PageRank computation is performed. Once the ranks of vertices have converged, the ranks are copied back from the GPU, and the reordered in original graph order as part of the post-processing step.
+
+% Levelwise PageRank (GPU)
+% However, unlike the Algorithm  Monolithic approach, PageRank computation of each level (consisting of one or more affected SCCs) is performed until convergence (i.e., multiple iterations) in a sequential order. The rest of the process, including the preprocessing as well as the post-processing is similar to that of the Monolithic approach.

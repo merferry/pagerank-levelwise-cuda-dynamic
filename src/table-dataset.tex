@@ -1,0 +1,29 @@
+\begin{table}[!hbtp]
+\centering
+\begin{tabular}{||c||c|c|c|c||}
+ \hline
+ \textbf{Graph} &
+ \textbf{$|V|$} &
+ \textbf{$|E|$} &
+ \textbf{$SCCs$} &
+ \textbf{$Levels$} \\ \hline
+ \multicolumn{5}{|c|}{Web Graphs} \\ \hline
+  arabic-2005 & 22.7M & 640.0M & 4.0M & 286 \\ \hline
+  uk-2005 & 39.5M & 936.4M & 5.8M & 425 \\ \hline
+  it-2004 & 41.3M & 1.2B & 6.8M & 278 \\ \hline
+  \multicolumn{5}{|c|}{Social Networks} \\ \hline
+  soc-Epinions1 & 75.9K & 524.4K & 42.2K & 10 \\ \hline
+  soc-LiveJournal1 & 4.8M & 69.5M & 971.2K & 24 \\ \hline
+  wiki-Talk & 2.4M & 7.3M & 2.3M & 8 \\ \hline
+  \multicolumn{5}{|c|}{Citation/Collaboration Networks} \\ \hline
+  cit-Patents & 3.8M & 18.2M & 3.8M & 32 \\ \hline
+  coPapersDBLP & 540.5K & 30.5M & 1 & 1 \\ \hline
+  amazon-2008 & 735.3K & 5.2M & 90.7K & 6 \\ \hline
+  \multicolumn{5}{|c|}{Road/Control-flow Networks} \\ \hline
+  italy\_osm & 6.7M & 14.0M & 1 & 1 \\ \hline
+  Linux\_call\_graph & 324.1K & 1.3M & 320.1K & 70 \\ \hline
+\end{tabular}
+\vspace{0.3 cm}
+\caption{List of 11 graphs used in our the experiments. Here, $|V|$ is the total number of vertices, $|E|$ is the total number of edges, $SCCs$ is the number of strongly connected components, and $Levels$ is the SCC levels of each fixed graph. The number of vertices and edges are rounded to the nearest thousand (K) or million (M), as appropriate.}
+\label{tab:dataset}
+\end{table}

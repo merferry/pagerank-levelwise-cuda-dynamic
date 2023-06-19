@@ -1,0 +1,15 @@
+\begin{figure*}[!hbtp]
+  \centering
+
+  \subfloat{
+    \includegraphics[width=0.48\textwidth]{out/batch-levlomp-all.pdf}
+    \label{fig:batch-levlomp-am}
+  }
+  \subfloat{
+    \includegraphics[width=0.48\textwidth]{out/batch-monocuda-all.pdf}
+    \label{fig:batch-monocuda-am}
+  }
+
+  \caption{Speedup of batched \levelwisePR{} algorithm with respect to cumulative single-edge updates with the same approach on the CPU is shown on the left. Speedup of batched \monolithicPR{} algorithm with respect to cumulative single-edge updates with the same approach on the GPU is shown on the right. Batch sizes of 500, 1000, 5000, and 10000 are shown.}
+  \label{fig:batch-all}
+\end{figure*}

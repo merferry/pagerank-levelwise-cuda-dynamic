@@ -1,0 +1,46 @@
+Let $G$ be the previous snapshot of the graph, and $B$ be the set of edges (graph delta/batch) that are to be inserted/deleted. If the batch of edges $B$ consists of edges to be inserted then the new graph $G' := G \cup B$, whereas if $B$ consists of edges to be deleted, then the new graph $G' = G \setminus B$. We use $pr_v$ to denote the PageRank of a vertex $v$, $in_v := \{u \mid (u, v) \in E\}$ to denote the set of incoming neighbors of $v$,  $indeg_v = |in_v|$ to denote the in-degree of $v$. Similarly, $out_v$ and $outdeg_v$ correspond to the out-neighbors and out-degree of $v$. Finally, $n$ is the total number of vertices in the graph. We assume that the SCCs of $G'$ and those of $G$ are identical. This is a common assumption made in other papers dealing with dynamic centrality measures \cite{cent-shukla20,jamour,cc-mccoll13,ipdps22}.
+
+We say that a vertex $v$ is affected due to the insertion/deletion of a batch of edges if the PageRank of $v$ in $G'$ differs from the PageRank of $v$ in $G$. The main idea behind our algorithms is to identify affected vertices as follows. Let $C$ be an SCC of $G'$. If $C$ or an ancestor of $C$ in the topological order of the SCCs of $G'$ have an edge from $B$, then we say that all vertices in $C$ are affected.
+% If an SCC $C$ has an affected vertex, then the SCC $C$ is said to be an affected component.
+
+In this section, we describe the two algorithms we propose to obtain the PageRank of vertices in a graph on addition/deletion of a batch of edges. One feature of both of these algorithms is that they (re)compute the PageRank of only vertices that are affected by the insertion/deletion of edges.
+
+
+
+
+\subsection{Dynamic Monolithic PageRank}
+
+Let $G'_{SCC}$ be the block-graph of $G'$. We first identify all the affected SCCs of $G'$, and recompute the PageRank of vertices in the set of SCCs $S := \{C \mid $ \mbox{$C$ is an affected SCC of $G'$} \}. Initial ranks of the vertices are computed from the ranks of vertices in the previous graph snapshot using Algorithm \ref{alg:adjust-ranks}. PageRank computation is then performed on all affected SCCs in each iteration, until ranks of all affected vertices converge (based on given tolerance). The algorithm for \monolithicPR{} is shown in Algorithm \ref{alg:monolithic}. In Algorithm~\ref{alg:monolithic}, $MIN\_WORK$ is the minimum number of vertices that are processed together for computing PR in a monolithic manner. We also partition the vertices based on an in-degree based threshold to efficiently allocate threads for each vertex. This threshold is controlled by $SWITCH\_DEG$, below which we partition so as to allocate one thread per vertex and if above, we allocate one block of threads to each vertex.
+
+\input{src/algorithm-adjust-ranks}
+\input{src/algorithm-monolithic}
+
+
+
+
+\subsection{Dynamic Levelwise PageRank}
+
+\levelwisePR{} differs from the Monolithic approach in the way the affected SCCs are processed. Let $G'_{SCC}$ be the block-graph of $G'$, where $G'$ is the current snapshot of the graph. Initial ranks of the vertices are obtained with the same process as mentioned above. We start by recomputing the PageRanks of vertices in the SCCs grouped by levels $L_i := [C_{i1}, C_{i2}, ...]$ in the block-graph of $G'$ such that $L_i$ is the topmost unprocessed level in $G'_{SCC}$. PageRank computation is then performed on each affected level $L_i$ in sequential order until convergence. This is repeated until all affected SCCs have been processed. The algorithm for \levelwisePR{} is shown in Algorithm \ref{alg:levelwise}.
+
+\input{src/algorithm-levelwise}
+
+
+
+% Real-world graphs are usually dynamic, with new edges and vertices being inserted or deleted all the time. \emph{Time-evolving ranks} of vertices in such a graph can be obtained by performing a fresh (static) PageRank computation at every snapshot of the graph. Another approach is to use the ranks of vertices in the previous snapshot as \emph{initial ranks} to the algorithm \cite{pr-deeper01}. This approach is called \emph{incremental/dynamic PageRank}. Here however, we consider the two are considered to be somewhat different, i.e., \emph{dynamic PageRank} involves skipping computation on unaffected vertices, while \emph{incremental PageRank} does not.
+
+% With dynamic Levelwise PageRank however, affected components are arranged in topological order of their appearance in the block-graph, . Each component in the block-graph is represented by a vertex, and each cross-edge between two components represents an edge (multiple cross-edges between components are represented by a single edge). A simple example of this process is shown in Figure \ref{fig:levelwise}. Components with with the same level in the block-graph are combined, and each level is processed in sequential order. This is done by performing the entire PageRank computation loop (i.e., multiple iterations) per level until its convergence.
+% Like the original algorithm \cite{pr-sticd16}, the input graph is decomposed into a \emph{block-graph} of \emph{SCCs}, and processed in \emph{topological order}, a \emph{level} at a time. Note that each level can be composed of one or more components. \emph{All} the components in a level are processed at the \emph{same time}, \emph{until convergence} (multiple iterations). A level can \emph{only} be processed after its \emph{previous levels} have been \emph{processed} (till convergence). On \emph{GPUs}, in addition to this, vertices in each level are \emph{partitioned by in-degree} similar to \emph{Monolithic} approach, as mentioned above. The formula used for calculating the rank of each vertex is exactly the same as that mentioned for Monolithic PageRank.
+% In dynamic mode, the \emph{initial ranks} are obtained from the \emph{previous snapshot} of the graph, and only \emph{affected components} are processed (computation on \emph{unaffected components} is skipped). \emph{Affected components} are obtained by performing a \emph{Depth-First Search (DFS) traversal} of the \emph{block-graph}, from the \emph{changed components}. Algorithm for Levelwise approach is shown in Algorithm \ref{alg:levelwise}.
+
+
+% \subsection{Dynamic PageRank}
+%The \emph{initial} PageRanks are obtained from the \emph{previous snapshot} of the graph, and only \emph{affected vertices} are processed (computation on \emph{unaffected vertices} is skipped).
+
+
+% \kk{add some pseudo-code that details the steps of the algorithm. Such as: for a batch B of edges added do.}
+% \kk{It may be better to write the pseudo-code than the actual code. The pseudo-code will highlight the steps}
+% \su{Sir the python-like code is actually pseudo-code!}
+
+
+% \subsection{Batch Update}
+% \subsection{Analysis}

@@ -1,0 +1,128 @@
+\documentclass[conference,10pt]{IEEEtran}
+%\documentclass{article}
+\IEEEoverridecommandlockouts
+%\usepackage[T1]{fontenc}
+%\usepackage[utf8]{inputenc}
+%\usepackage[style=ieee]{biblatex}
+%\usepackage[numbers]{natbib}
+
+%\usepackage{algorithm2e}
+\usepackage{algorithm}
+\usepackage[noend]{algpseudocode}
+\newcommand{\vars}{\texttt}
+\newcommand{\func}{\textrm}
+\let\oldReturn\Return
+\renewcommand{\Return}{\State\oldReturn}
+\newcommand*\Let[2]{\State #1 $\gets$ #2}
+\algrenewcommand\alglinenumber[1]{
+  {\sf\footnotesize\addfontfeatures{Colour=888888,Numbers=Monospaced}#1}
+}
+\algrenewcommand\algorithmicrequire{\textbf{Precondition:}}
+\algrenewcommand\algorithmicensure{\textbf{Postcondition:}}
+
+\usepackage{comment}
+\usepackage{xurl}
+\usepackage{hyperref}
+\usepackage{graphicx}
+\usepackage[table,xcdraw]{xcolor}
+\usepackage[caption=false]{subfig}
+\usepackage{minted}
+\usepackage{multirow}
+% Configure hyperlinks
+%\hypersetup{
+%  colorlinks=true,
+%  linkcolor=blue,
+%  filecolor=magenta,
+%  urlcolor=blue,
+%}
+% Custom colors
+%\definecolor{lightergray}{gray}{0.9}
+% Global configs
+%\graphicspath{{./out/}}
+%\addbibresource{src/bibliography.bib}
+
+\usepackage{caption}
+\captionsetup{font=footnotesize}
+
+\usepackage{tabularx}
+\usepackage{mathtools}
+\usepackage{xparse}
+\usepackage[parfill]{parskip}
+\usepackage{csquotes}
+\usepackage{siunitx}
+\usepackage{textcomp}
+\usepackage{tikz}
+% \usepackage{listings}
+% \usepackage{lipsum}
+% \usepackage{blindtext}
+%\usepackage{unicode-math}
+
+\newcommand{\ignore}[1] {}
+\pagenumbering{arabic}
+\pagestyle{plain}
+
+% Message
+\newcommand{\kk}[1]{{{\color{red} #1}}}
+\newcommand{\ds}[1]{{{\color{blue} #1}}}
+\newcommand{\su}[1]{{{\color{green} #1}}}
+
+% Shortcuts
+% \newcommand{\hyprCPU}{HyPR (Pure CPU)}
+% \newcommand{\hyprGPU}{HyPR (Pure GPU)}
+% \newcommand{\sticdPR}{Algorithm SticdPR}
+\newcommand{\monolithicPR}{Algorithm \textsc{DynamicMonolithicPR}}
+\newcommand{\levelwisePR}{Algorithm \textsc{DynamicLevelwisePR}}
+\newcommand{\gscc}{G_{\mathrm{SCC}}}
+% \NewDocumentCommand{\codeword}{v}{\texttt{\textcolor{blue}{#1}}}
+
+\newcommand{\X}{$\times$}
+\newcommand{\x}{$\times$}
+
+
+
+
+\title{Dynamic Batch Parallel Algorithms for Updating PageRank}
+\author{
+  \IEEEauthorblockN{
+    Subhajit Sahu\IEEEauthorrefmark{2}$^*$ \thanks{$^*$The work of this author is partially supported by a grant from the Department of Science and Technology (DST), India, under the National Supercomputing Mission (NSM) R\&D in Exascale initiative vide Ref. No: DST/NSM/R\&D\_Exascale/2021/16.},
+    Kishore Kothapalli\IEEEauthorrefmark{2}$^*$ and
+    Dip Sankar Banerjee\IEEEauthorrefmark{3}}
+  \IEEEauthorblockA{
+    \IEEEauthorrefmark{2}International Institute of Information Technology Hyderabad, India.}
+    \IEEEauthorblockA{\IEEEauthorrefmark{3} Indian Institute of Technology Jodhpur, India.\\
+      \{subhajit.sahu@research.,kkishore@\}iiit.ac.in, dipsankarb@iitj.ac.in}
+    }
+\date{}
+
+
+
+
+\begin{document}
+\maketitle
+\begin{abstract}
+The design and implementation of parallel algorithms for dynamic graph problems is attracting significant research attention in the recent years, driven by numerous applications to social network analysis, neuroscience, and protein interaction networks. One such problem is the computation of PageRank values of vertices in a directed graph.
+This paper presents two new parallel algorithms for recomputing the PageRank values of vertices in a dynamic graph. Our techniques require the recomputation of the PageRank of only the vertices affected by the insertion/deletion of a batch of edges. We conduct detailed experimental studies of our algorithm on a set of 11 real-world graphs. Our results on Intel Xeon Silver 4116 CPU and NVIDIA Tesla V100 PCIe 16GB GPU indicate that our algorithms outperform static and dynamic update algorithms by 6.1\x and 8.6\x on the CPU, and by 9.8\x and 9.3\x on the GPU respectively. We also compare the performance of the algorithms in batched mode to cumulative single-edge updates.
+\end{abstract}
+
+\section{Introduction}
+\input{01-introduction}
+
+\section{Preliminaries}
+\input{02-preliminaries}
+
+\section{Algorithmic approaches}
+\input{03-algorithm}
+
+\section{Implementation details}
+\input{04-implementation}
+
+\section{Results}
+\input{05-results}
+
+\section{Conclusion}
+\input{06-conclusion}
+
+\small
+\bibliographystyle{IEEEtran}
+\bibliography{inc/References}
+\end{document}
